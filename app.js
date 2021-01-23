@@ -17,7 +17,27 @@ router.post("/", function (req, res, next) {
   var apiLink= 'http://api.openweathermap.org/data/2.5/forecast?mode=xml&units=metric&lang=pl';
   apiLink += '&q=' + location;
   apiLink += '&appid=' + process.env.API_KEY;
+
+
   const now = new Date();
+  const weekDays = new Array ('niedziela', 'poniedziałek', 'wtorek', 'środa', 'czwartek', 'piątek', 'sobota');
+  const weekDay = now.getDay();
+  const day = weekDays[weekDay];
+
+  const hour = now.getHours();
+  const hourString = hour.toString().padStart(2, '0');
+  const minute = now.getMinutes();
+  const minuteString = minute.toString().padStart(2, '0');
+  const time = hourString + ":" + minuteString;
+
+  const dayNumber = now.getDate().toString().padStart(2, '0');
+  const month = (now.getMonth()+1).toString().padStart(2, '0');
+  const year = now.getFullYear().toString();
+  const date = [dayNumber, month, year].join('.');
+
+  const dayTime = hour >22 || hour < 7 ? "Noc" : "Dzień";
+  
+
   console.log(apiLink);
   
   // zapytanie pobierające dane od api pogodowego
@@ -43,13 +63,14 @@ router.post("/", function (req, res, next) {
 
                var json = {
                   "location": result.weatherdata.location[0].name + '',
-                  "time": now.getHours() + ':' + now.getMinutes(),
-                  "day": now.getDay(),
-                  "date": now.getDate() + '.' + now.getMonth()+1 + '.' + now.getFullYear(),
-                  "temperature": result.weatherdata.forecast[0].time[0].temperature[0].value + ' ' + result.weatherdata.forecast[0].time[0].temperature[0].unit,
-                  "windSpeed": result.weatherdata.forecast[0].time[0].windSpeed[0].mps + ' ' + result.weatherdata.forecast[0].time[0].windSpeed[0].unit,
+                  "time":time,
+                  "day": day,
+                  "date": date,
+                  "temperature": result.weatherdata.forecast[0].time[0].temperature[0].value + '°C',
+                  "dayTime": dayTime,
+                  "windSpeed": result.weatherdata.forecast[0].time[0].windSpeed[0].mps + '',
                   "rainProbability": result.weatherdata.forecast[0].time[0].precipitation[0].probability + '',
-                  "humidity": result.weatherdata.forecast[0].time[0].humidity[0].value + result.weatherdata.forecast[0].time[0].humidity[0].unit
+                  "humidity": result.weatherdata.forecast[0].time[0].humidity[0].value + ''
               }
               
                 res.status(200).json(json);
